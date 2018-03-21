@@ -1,8 +1,23 @@
-# CognitoAuth
-Short description and motivation.
+# CognitoAuth::Engine
+
+The blurb from Amazon's website on [Amazon Cognito](https://aws.amazon.com/cognito/):
+
+> Amazon Cognito lets you easily add user sign-up and sign-in to your mobile
+> and web apps. With Amazon Cognito, you can also authenticate users through
+> social identity providers such as Facebook, Twitter, or Amazon, or by using
+> your own identity solution. In addition, Amazon Cognito enables you to save
+> data locally on users devices, allowing your applications to work even when
+> the devices are offline. You can then synchronize data across users devices
+> so that their app experience remains consistent regardless of the device they
+> use.
+
+> With Amazon Cognito, you can focus on creating great app experiences instead
+> of worrying about building, securing, and scaling a solution to handle user
+> management, authentication, and sync across devices.
+
 
 ## Usage
-How to use my plugin.
+How to use this plugin.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -41,9 +56,6 @@ The SDK searches the following locations for credentials:
 * `ENV['AWS_ACCESS_KEY_ID']`
 * `ENV['AWS_SECRET_ACCESS_KEY']`
 * `ENV['AWS_REGION']`
-
-## Contributing
-Contribution directions go here.
 
 ## License
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
