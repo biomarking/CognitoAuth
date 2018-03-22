@@ -17,5 +17,6 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
   s.add_dependency "aws-sdk-cognitoidentityprovider", "~> 1.3.0"
+  s.add_dependency "encryption"
 
 end
