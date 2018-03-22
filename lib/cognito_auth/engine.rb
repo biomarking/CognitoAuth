@@ -19,13 +19,9 @@ module CognitoAuth
           client_id: client_id,
           auth_flow: "USER_PASSWORD_AUTH",
           auth_parameters: auth_parameters(options)
-          # {
-          #   "SECRET_HASH" => hmac(options[:username]),
-          #   "USERNAME" => options[:username],
-          #   "PASSWORD" => options[:password]
-          # }
         })
-        res.to_h
+        validate_token(res.authentication_result.access_token)
+        res
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         # rescues all service API errors
         raise ExceptionHandler::AuthenticationError, e.message
@@ -57,22 +53,9 @@ module CognitoAuth
               },
             ]
           })
-
-
-        # res = client.initiate_auth({
-        #   client_id: client_id,
-        #   auth_flow: "USER_PASSWORD_AUTH",
-        #   auth_parameters: #auth_parameters(options)
-        #   {
-        #     "SECRET_HASH" => hmac(options[:username]),
-        #     "USERNAME" => options[:username],
-        #     "PASSWORD" => options[:password]
-        #   }
-        # })
         res.to_h
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         # rescues all service API errors
-        p "====#{e.inspect}"
         raise ExceptionHandler::AuthenticationError, e.message
       end
     end
@@ -96,6 +79,20 @@ module CognitoAuth
       @client_id = CognitoAuth.configuration.client_id
       @client_secret = CognitoAuth.configuration.client_secret
       @pool_id = CognitoAuth.configuration.pool_id
+    end
+
+    def validate_token(jwt)
+      token = JWT.decode jwt, nil, false
+      kid = token[1]["kid"]
+      jwk1 = CognitoAuth.configuration.jwks["keys"].detect { |jwk| jwk["kid"] == kid }
+      jwk = JSON::JWK.new jwk1
+      js = JSON::JWT.decode jwt, jwk
+      iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
+      unless js[:token_use] == :access || js[:iss] == iss
+        raise ExceptionHandler::AuthenticationError
+      end
+    rescue => e
+        raise ExceptionHandler::AuthenticationError, "Unauthorized"
     end
 
     def auth_parameters(options={})

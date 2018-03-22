@@ -18,5 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "aws-sdk-cognitoidentityprovider", "~> 1.3.0"
   s.add_dependency "encryption"
+  s.add_dependency "json-jwt"
+  s.add_dependency "jwt"
 
 end
