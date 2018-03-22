@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Hi <%= @params[:username] %></h1>
+    <p>
+      <%= link_to('Click here to verify your account',"http://biomarking.org/verify?u=#{@params[:data]}") %>
+    </p>
+  </body>
+</html>

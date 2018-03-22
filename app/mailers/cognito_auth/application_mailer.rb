@@ -1,6 +1,6 @@
 module CognitoAuth
   class ApplicationMailer < ActionMailer::Base
-    default from: 'from@example.com'
+    default from: CognitoAuth.configuration.sender #ENV["SMTP_SENDER"]
     layout 'mailer'
   end
 end
