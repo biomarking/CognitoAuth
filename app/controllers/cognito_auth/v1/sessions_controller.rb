@@ -3,7 +3,10 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
 
   def create
     res = client.client_signin session_params
-    render json: res
+    if res[:authentication_result]
+      # create a record for new login user
+    end
+    render json: { result:res, message:"Authenticated" }
   end
 
   private
