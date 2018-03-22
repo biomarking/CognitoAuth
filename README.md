@@ -45,6 +45,7 @@ CognitoAuth.configure do |config|
   config.client_id = 'your_client_id'
   config.client_secret = 'your_client_secret_key'
   config.pool_id = 'your_pool_id'
+  config.sender = 'your_sender_address'
 end
 ```
 
