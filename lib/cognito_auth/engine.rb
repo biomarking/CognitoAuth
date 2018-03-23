@@ -33,7 +33,7 @@ module CognitoAuth
         initialize
         res = client.sign_up({
             client_id: client_id,
-            secret_hash: hmac(options[:username]), #Base64.encode64(OpenSSL::HMAC.digest('sha256', ENV["AWS_COGNITO_SECRET"], "#{username}#{clientid}")).strip(),
+            secret_hash: hmac(options[:username]),
             username: options[:username], # required
             password: options[:password], # required
             user_attributes: [
@@ -73,6 +73,45 @@ module CognitoAuth
       end
     end
 
+    def client_forgot_password(username)
+      begin
+        initialize
+        res = client.admin_get_user({
+          user_pool_id: pool_id, # required
+          username: username, # required
+        })
+        res
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def client_add_to_group(options={})
+      begin
+        initialize
+        res = client.admin_add_user_to_group({
+          user_pool_id: pool_id, # required
+          username: options[:username], # required
+          group_name: options[:group], # required
+        })
+        res.to_h
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def client_sign_out(token)
+      begin
+        initialize
+        res = client.global_sign_out({
+          access_token: token, # required
+        })
+        res
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
     private
     def initialize
       @client = Aws::CognitoIdentityProvider::Client.new
@@ -92,7 +131,7 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError
       end
     rescue => e
-        raise ExceptionHandler::AuthenticationError, "Unauthorized"
+        raise ExceptionHandler::AuthenticationError, e
     end
 
     def auth_parameters(options={})

@@ -3,6 +3,7 @@ require "cognito_auth/engine"
 require "cognito_auth/version"
 require 'encryption'
 require 'jwt'
+require 'json/jwt'
 require 'aws-sdk-cognitoidentityprovider'
 
 module CognitoAuth

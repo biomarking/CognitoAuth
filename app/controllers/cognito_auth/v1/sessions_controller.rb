@@ -12,9 +12,17 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
     }
   end
 
+  def destroy
+    # get the access_token from authorization header
+    res = client.client_sign_out(request.headers['Authorization'])
+    render json: {
+      message: "You are now signed out"
+    }
+  end
+
   private
 
   def session_params
-    params.require(:session).permit(:username,:password)
+    params.require(:session).permit(:username,:password,:access_token)
   end
 end
