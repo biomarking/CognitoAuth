@@ -10,7 +10,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
       username_encode = encrypt(user_params[:username])
       options = { username:user_params[:username], data:username_encode }
       # send confirmation link to user
-      SendMail.account_confirmation(options).deliver
+      CognitoAuth::SendMail.account_confirmation(options).deliver
       # attached user to specific group or default to users
       data = { username: res[:user_sub], group: user_params[:group] || "Users" }
       group = client.client_add_to_group(data)
@@ -28,7 +28,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def forgot
     res = client.client_forgot_password user_params[:username]
     options = { username: user_params[:username], data: res.username}
-    SendMail.account_forgot(options).deliver
+    CognitoAuth::SendMail.account_forgot(options).deliver
     render json: { message: "Thank you. Please check your email." }
   end
 
