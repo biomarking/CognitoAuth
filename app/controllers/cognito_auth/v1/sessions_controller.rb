@@ -1,15 +1,21 @@
 class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
   before_action :initiate_auth
-
+  
   def create
     res = client.client_signin session_params
-    # if res[:authentication_result]
-    #   # create a record for new login user
-    # end
-    render json: {
-      access_token:res.authentication_result.access_token,
-      message:"Authenticated"
-    }
+   
+    if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
+      render json: {
+        access_token:nil,
+        message:res.challenge_name
+      }
+    else
+      render json: {
+        access_token:res.authentication_result.access_token,
+        message:"Authenticated"
+      }
+    end
+    
   end
 
   def destroy

@@ -12,6 +12,48 @@ module CognitoAuth
       end
     end
 
+    def force_update_password( options={} )
+      begin
+        initialize
+
+        # verify that the user state is really NEW_PASSWORD_REQUIRED
+        # this stage can be remove if all challenge requirement are sent to user but for security just verify and proceed to solve the challenge response
+        res = client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "USER_PASSWORD_AUTH",
+          auth_parameters: auth_parameters(options)
+        })
+
+        #verify if the challenge requirement is NEW_PASSWORD_REQUIRED
+        if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
+
+          #process the challenge NEW_PASSWORD_REQUIRED
+
+          resp = client.admin_respond_to_auth_challenge({
+            user_pool_id: pool_id, # required
+            client_id: client_id, # required
+            challenge_name: "NEW_PASSWORD_REQUIRED",
+            challenge_responses: {
+              "USERNAME" =>res.challenge_parameters["USER_ID_FOR_SRP"],
+              "NEW_PASSWORD" => options[:new_password],
+              "SECRET_HASH" => hmac(res.challenge_parameters["USER_ID_FOR_SRP"]),
+            },
+            session: res.session
+          })
+          #verify the token
+          validate_token(resp.authentication_result.access_token)
+          resp
+        else
+          #proceed with the normal process
+          validate_token(res.authentication_result.access_token)
+          res
+        end
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API errors
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
     def client_signin(options={})
       begin
         initialize
@@ -20,8 +62,12 @@ module CognitoAuth
           auth_flow: "USER_PASSWORD_AUTH",
           auth_parameters: auth_parameters(options)
         })
-        validate_token(res.authentication_result.access_token)
-        res
+        if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
+          res
+        else
+          validate_token(res.authentication_result.access_token)
+          res
+        end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         # rescues all service API errors
         raise ExceptionHandler::AuthenticationError, e.message

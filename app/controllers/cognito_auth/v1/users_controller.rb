@@ -1,6 +1,21 @@
 class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
+  
+  #instantiate AWS Cognito things
   before_action :initiate_auth
-  before_action :initiate_encryptor
+
+  #added except to skip when update method is being called
+  before_action :initiate_encryptor , except:[:update]
+
+  def update
+    #response to the challenge
+    resp = client.force_update_password session_params
+    
+    render json: {
+      access_token:resp.authentication_result.access_token,
+      message:"Authenticated"
+    } 
+    
+  end
 
   def create
     # check if user accept the terms of service
@@ -36,5 +51,8 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
 
   def user_params
     params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing)
+  end
+  def session_params
+    params.require(:user).permit(:username,:password, :new_password)
   end
 end
