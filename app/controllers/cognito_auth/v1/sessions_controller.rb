@@ -1,6 +1,16 @@
 class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
   before_action :initiate_auth
-  
+    
+
+  def verify
+    client.validate_user( request.headers['x-biomark-token'] )
+    
+    render json: {
+      message:"Verified"
+    }
+    
+  end
+
   def create
     res = client.client_signin session_params
     

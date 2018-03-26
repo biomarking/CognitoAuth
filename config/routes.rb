@@ -5,6 +5,7 @@ CognitoAuth::Engine.routes.draw do
     resources :sessions, only: [:create] do
       collection do
         post 'destroy'
+        post 'verify'
       end
     end
 
