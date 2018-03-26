@@ -12,6 +12,25 @@ module CognitoAuth
       end
     end
 
+    def self.validate_user token
+      validate_token token
+    end
+
+    def validate_token(jwt)
+      token = JWT.decode jwt, nil, false
+      kid = token[1]["kid"]
+      jwk1 = CognitoAuth.configuration.jwks["keys"].detect { |jwk| jwk["kid"] == kid }
+      jwk = JSON::JWK.new jwk1
+      js = JSON::JWT.decode jwt, jwk
+      iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
+      unless js[:token_use] == :access || js[:iss] == iss
+        raise ExceptionHandler::AuthenticationError
+      end
+      token
+    rescue => e
+        raise ExceptionHandler::AuthenticationError, e
+    end
+
     def force_update_password( options={} )
       begin
         initialize
@@ -45,7 +64,8 @@ module CognitoAuth
           resp
         else
           #proceed with the normal process
-          validate_token(res.authentication_result.access_token)
+          res = res.to_h
+          res[:uuid] = validate_token(res[:authentication_result][:access_token])
           res
         end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
@@ -65,7 +85,9 @@ module CognitoAuth
         if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
           res
         else
-          validate_token(res.authentication_result.access_token)
+
+          res = res.to_h
+          res[:uuid] = validate_token(res[:authentication_result][:access_token])
           res
         end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
@@ -166,19 +188,20 @@ module CognitoAuth
       @pool_id = CognitoAuth.configuration.pool_id
     end
 
-    def validate_token(jwt)
-      token = JWT.decode jwt, nil, false
-      kid = token[1]["kid"]
-      jwk1 = CognitoAuth.configuration.jwks["keys"].detect { |jwk| jwk["kid"] == kid }
-      jwk = JSON::JWK.new jwk1
-      js = JSON::JWT.decode jwt, jwk
-      iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
-      unless js[:token_use] == :access || js[:iss] == iss
-        raise ExceptionHandler::AuthenticationError
-      end
-    rescue => e
-        raise ExceptionHandler::AuthenticationError, e
-    end
+    # def validate_token(jwt)
+    #   token = JWT.decode jwt, nil, false
+    #   kid = token[1]["kid"]
+    #   jwk1 = CognitoAuth.configuration.jwks["keys"].detect { |jwk| jwk["kid"] == kid }
+    #   jwk = JSON::JWK.new jwk1
+    #   js = JSON::JWT.decode jwt, jwk
+    #   iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
+    #   unless js[:token_use] == :access || js[:iss] == iss
+    #     raise ExceptionHandler::AuthenticationError
+    #   end
+    #   token
+    # rescue => e
+    #     raise ExceptionHandler::AuthenticationError, e
+    # end
 
     def auth_parameters(options={})
       {

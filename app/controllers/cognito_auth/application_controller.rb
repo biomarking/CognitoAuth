@@ -4,6 +4,7 @@ module CognitoAuth
     include ExceptionHandler
     # protect_from_forgery with: :exception
     attr_reader :client, :encryptor
+    
 
     def initiate_auth
       @client = CognitoAuth::Engine
@@ -13,6 +14,12 @@ module CognitoAuth
       Base64.encode64(encryptor.encrypt( data ))
     end
 
+    def add_record uuid
+      _user = User.new
+      _user.uuid = uuid
+      _user.save
+    end
+    
     def decrypt(data)
       decode = Base64.decode64(data)
       encryptor.decrypt( decode )
