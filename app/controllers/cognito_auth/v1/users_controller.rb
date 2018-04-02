@@ -12,15 +12,15 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
     #response to the challenge
     resp = client.force_update_password session_params
     
-    user_login = User.find_by_uuid resp[:uuid][0]["sub"]
+    user_login = User.find_by_uuid resp[:uuid]
       
     #create a new record
     if !user_login.present?
-      add_record res[:uuid][0]["sub"]
+      add_record resp[:uuid]
     end
-
+   
     render json: {
-      access_token:resp.authentication_result.access_token,
+      access_token:resp[:token],
       message:"Authenticated",
       first_login: !user_login.present?
     } 

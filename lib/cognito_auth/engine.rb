@@ -59,14 +59,23 @@ module CognitoAuth
             },
             session: res.session
           })
-          #verify the token
-          validate_token(resp.authentication_result.access_token)
-          resp
+         
+          df = validate_token(resp.authentication_result.access_token)
+         
+          return {
+            uuid:df[0]["sub"],
+            token: resp.authentication_result.access_token
+          }
+          
         else
-          #proceed with the normal process
-          res = res.to_h
-          res[:uuid] = validate_token(res[:authentication_result][:access_token])
-          res
+          
+          df = validate_token(res[:authentication_result][:access_token])
+          
+          return {
+            uuid:df[0]["sub"], 
+            token: res[:authentication_result][:access_token]
+          }
+
         end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         # rescues all service API errors
@@ -75,18 +84,19 @@ module CognitoAuth
     end
 
     def client_signin(options={})
+    
       begin
         initialize
+
         res = client.initiate_auth({
           client_id: client_id,
           auth_flow: "USER_PASSWORD_AUTH",
           auth_parameters: auth_parameters(options)
         })
-        if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
+        res = res.to_h
+        if res[:challenge_name] && res[:challenge_name] != nil
           res
         else
-
-          res = res.to_h
           res[:uuid] = validate_token(res[:authentication_result][:access_token])
           res
         end

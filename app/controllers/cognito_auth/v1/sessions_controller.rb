@@ -15,10 +15,10 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
     res = client.client_signin session_params
     
     if res[:challenge_name]
-
+      
       case res[:challenge_name]
         #NEW_PASSWORD_REQUIRED
-        when :NEW_PASSWORD_REQUIRED
+        when "NEW_PASSWORD_REQUIRED"
           render json: {
             access_token:nil,
             message:res[:challenge_name]
@@ -26,6 +26,7 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
       end
       
     else
+      
       user_login = User.find_by_uuid res[:uuid][0]["sub"]
       
       #create a new record
