@@ -45,7 +45,7 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
 
   def destroy
     # get the access_token from authorization header
-    res = client.client_sign_out(request.headers['Authorization'])
+    res = client.client_sign_out(request.headers['x-biomark-token'])
     render json: {
       message: "You are now signed out"
     }
