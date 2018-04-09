@@ -199,7 +199,8 @@ module CognitoAuth
         })
         res
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        raise ExceptionHandler::AuthenticationError, e.message
+        {}
+        # raise ExceptionHandler::AuthenticationError, e.message
       end
     end
 
