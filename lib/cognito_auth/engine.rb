@@ -204,6 +204,18 @@ module CognitoAuth
       end
     end
 
+    def client_change_password(params,token)
+      begin
+        resp = client.change_password({
+          previous_password: params["password"], # required
+          proposed_password: params["new_password"], # required
+          access_token: token, # required
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
     private
     def initialize
       @client = Aws::CognitoIdentityProvider::Client.new

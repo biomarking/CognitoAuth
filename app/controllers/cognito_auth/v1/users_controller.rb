@@ -58,6 +58,11 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
     render json: { message: "Thank you. Please check your email." }
   end
 
+  def change_password
+    res = client.client_change_password session_params,request.headers['x-biomark-token']
+    render json: { message: "Update successful"}
+  end
+
   private
 
   def user_params

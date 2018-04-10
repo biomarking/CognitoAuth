@@ -1,7 +1,7 @@
 CognitoAuth::Engine.routes.draw do
 
   namespace :v1, defaults: { format: :json } do
-    
+
     resources :sessions, only: [:create] do
       collection do
         post 'destroy'
@@ -14,6 +14,7 @@ CognitoAuth::Engine.routes.draw do
         post 'activate'
         post 'forgot'
         post 'update'
+        post 'change_password'
       end
     end
   end
