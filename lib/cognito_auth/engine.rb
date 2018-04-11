@@ -127,6 +127,29 @@ module CognitoAuth
       end
     end
 
+    def admin_create_user( options={} )
+      initialize
+      resp = client.admin_create_user({
+        user_pool_id: pool_id, # required
+        username: options[:username], # required
+        # user_attributes: [
+        #   # {
+        #   #   #name: "email", # required
+        #   #   #value: options[:username],
+        #   #   email_verified: true
+        #   # },
+        #   {
+        #     name: "phone_number",
+        #     value: options[:phone_number],
+        #     phone_number_verified: true
+        #   }
+        # ],
+        temporary_password: options[:password],
+        force_alias_creation: false,
+      })
+      resp.to_h
+    end
+
     def client_signup(options={})
       begin
         initialize
