@@ -68,20 +68,20 @@ module CognitoAuth
             },
             session: res.session
           })
-         
+
           df = validate_token(resp.authentication_result.access_token)
-         
+
           return {
             uuid:df[0]["sub"],
             token: resp.authentication_result.access_token
           }
-          
+
         else
-          
+
           df = validate_token(res[:authentication_result][:access_token])
-          
+
           return {
-            uuid:df[0]["sub"], 
+            uuid:df[0]["sub"],
             token: res[:authentication_result][:access_token]
           }
 
@@ -92,8 +92,21 @@ module CognitoAuth
       end
     end
 
+    def self.client_get_user_info(user)
+      begin
+        # initialize
+        res = client.admin_get_user({
+          user_pool_id: pool_id,
+          username: user, # required
+        })
+        res = res.to_h
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
     def client_signin(options={})
-    
+
       begin
         initialize
 
@@ -194,6 +207,19 @@ module CognitoAuth
           access_token: token, # required
         })
         res
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        {}
+        # raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def client_change_password(params,token)
+      begin
+        resp = client.change_password({
+          previous_password: params["password"], # required
+          proposed_password: params["new_password"], # required
+          access_token: token, # required
+        })
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         raise ExceptionHandler::AuthenticationError, e.message
       end

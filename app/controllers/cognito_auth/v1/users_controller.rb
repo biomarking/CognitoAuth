@@ -1,12 +1,12 @@
 class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
-  
+
   #instantiate AWS Cognito things
   before_action :initiate_auth
 
   #added except to skip when update method is being called
   before_action :initiate_encryptor , except:[:update]
 
-  #update user password when admin create a temp password 
+  #update user password when admin create a temp password
 
   def change_password
     begin
@@ -21,20 +21,20 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def update
     #response to the challenge
     resp = client.force_update_password session_params
-    
+
     user_login = User.find_by_uuid resp[:uuid]
-      
+
     #create a new record
     if !user_login.present?
       add_record resp[:uuid]
     end
-   
+
     render json: {
       access_token:resp[:token],
       message:"Authenticated",
       first_login: !user_login.present?
-    } 
-    
+    }
+
   end
 
   def create
@@ -47,7 +47,8 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
       # send confirmation link to user
       CognitoAuth::SendMail.account_confirmation(options).deliver
       # attached user to specific group or default to users
-      data = { username: res[:user_sub], group: user_params[:group] || "Users" }
+      grp = user_params[:group].present? ? user_params[:group] : "Users"
+      data = { username: res[:user_sub], group: grp }
       group = client.client_add_to_group(data)
       render json: res
     else
@@ -65,6 +66,11 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
     options = { username: user_params[:username], data: res.username}
     CognitoAuth::SendMail.account_forgot(options).deliver
     render json: { message: "Thank you. Please check your email." }
+  end
+
+  def change_password
+    res = client.client_change_password session_params,request.headers['x-biomark-token']
+    render json: { message: "Update successful"}
   end
 
   private
