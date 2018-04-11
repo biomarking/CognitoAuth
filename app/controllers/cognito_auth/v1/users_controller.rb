@@ -8,6 +8,16 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
 
   #update user password when admin create a temp password 
 
+  def change_password
+    begin
+      resp = client.gracefull_password_update({token:request.headers['x-biomark-token'],params:session_params})
+      render json: {status: true, message:"success"}
+    rescue Exception => e
+      render json: {status:false,message:e}
+    end
+      
+  end
+
   def update
     #response to the challenge
     resp = client.force_update_password session_params

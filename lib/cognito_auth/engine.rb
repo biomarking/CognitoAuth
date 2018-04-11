@@ -31,6 +31,15 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError, e
     end
 
+    def gracefull_password_update( options={})
+      df = validate_token( options[:token ])
+      resp = client.change_password({
+        previous_password: options[:params][:password], # required
+        proposed_password: options[:params][:new_password], # required
+        access_token: options[:token ], # required
+      })
+    end
+    
     def force_update_password( options={} )
       begin
         initialize
