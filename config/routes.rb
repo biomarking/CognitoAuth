@@ -15,6 +15,7 @@ CognitoAuth::Engine.routes.draw do
         post 'forgot'
         post 'update'
         post 'change_password'
+        post 'update_attribute'
       end
     end
   end

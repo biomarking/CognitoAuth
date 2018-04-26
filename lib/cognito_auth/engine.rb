@@ -38,7 +38,7 @@ module CognitoAuth
         access_token: options[:token ], # required
       })
     end
-    
+
     def force_update_password( options={} )
       begin
         initialize
@@ -244,6 +244,36 @@ module CognitoAuth
         })
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def client_update_attribute(params,token)
+      df = validate_token(token)
+      begin
+        res = client.admin_update_user_attributes({
+          user_pool_id: pool_id, # required
+          username: df[0]["username"], # required
+          user_attributes: [ # required
+            {
+              name: "email", # required
+              value: params["email_address"],
+            },
+            {
+              name: "phone_number", # required
+              value: params["mobile"],
+            },
+            {
+              name: "email_verified", # required
+              value: "true",
+            },
+            {
+              name: "phone_number_verified", # required
+              value: "true",
+            }
+          ],
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+          raise ExceptionHandler::AuthenticationError, e.message
       end
     end
 

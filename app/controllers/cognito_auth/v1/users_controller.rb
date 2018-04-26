@@ -15,7 +15,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
     rescue Exception => e
       render json: {status:false,message:e}
     end
-      
+
   end
 
   def update
@@ -71,6 +71,11 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def change_password
     res = client.client_change_password session_params,request.headers['x-biomark-token']
     render json: { message: "Update successful"}
+  end
+
+  def update_attribute
+    res = client.client_update_attribute(params,request.headers['x-biomark-token'])
+    render json: { message: "Update successful" }
   end
 
   private
