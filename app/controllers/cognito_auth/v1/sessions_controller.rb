@@ -45,7 +45,8 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
         message:"Authenticated",
         first_login: !user_login.present?,
         has_profile: profile,
-        session: grp_token.token
+        session: grp_token.token,
+        group: grp_token.name
       }
     end
 
