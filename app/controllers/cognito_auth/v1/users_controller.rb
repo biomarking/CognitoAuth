@@ -47,7 +47,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
       # send confirmation link to user
       CognitoAuth::SendMail.account_confirmation(options).deliver
       # attached user to specific group or default to users
-      grp = user_params[:group].present? ? user_params[:group].downcase
+      grp = user_params[:group].downcase : :user
       data = { username: res[:user_sub], group: grp }
       group = client.client_add_to_group(data)
       render json: res
