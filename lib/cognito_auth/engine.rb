@@ -11,7 +11,13 @@ module CognitoAuth
         end
       end
     end
-
+    def get_group_for_user username
+      res = client.admin_list_groups_for_user({
+        username: username, # required
+        user_pool_id: pool_id, # required
+      })
+      res.groups
+    end
     def self.validate_user token
       validate_token token
     end
@@ -115,6 +121,8 @@ module CognitoAuth
           auth_parameters: auth_parameters(options)
         })
         res = res.to_h
+
+       
         if res[:challenge_name] && res[:challenge_name] != nil
           res
         else
@@ -278,6 +286,7 @@ module CognitoAuth
     end
 
     private
+    
     def initialize
       @client = Aws::CognitoIdentityProvider::Client.new
       @client_id = CognitoAuth.configuration.client_id

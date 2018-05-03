@@ -33,14 +33,19 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
       if !user_login.present?
         add_record res[:uuid][0]["sub"]
       end
-
+      group = client.get_group_for_user res[:uuid][0]["sub"]
+      
+     
+      grp_token = UserGroup.find_by_name group[0].group_name
+      
       profile = user_login.present? ? user_login.profile.present? : false
       #render
       render json: {
         access_token:res[:authentication_result][:access_token],
         message:"Authenticated",
         first_login: !user_login.present?,
-        has_profile: profile
+        has_profile: profile,
+        session: grp_token.token
       }
     end
 
