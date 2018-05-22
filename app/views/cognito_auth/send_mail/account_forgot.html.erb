@@ -1,12 +1,83 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
-  </head>
-  <body>
-    <h1>Hi <%= @params[:username] %></h1>
-    <p>
-      <%= link_to('Click here to reset your password',"https://app.biomarking.org/forgot?u=#{@params[:data]}") %>
-    </p>
-  </body>
+    <head>
+        <title>TEST</title>
+        <style>
+            *{
+                padding: 0;
+                margin:0;
+            }
+        </style>
+        <link href="https://fonts.googleapis.com/css?family=Mukta:400,700|Muli:400,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+    <body style="background:#fafbfd">
+        <div style="width:600px; margin:auto;display:block; box-sizing:border-box;overflow: auto;">
+            <div style="height:120px; width:600px;">
+                <img style="margin-top:40px" src="https://demo.biomarking.org/images/biomark_logo.png" height="50px" alt="Biomark">
+            </div>
+            <div 
+                style="width:600px; 
+                    min-height: 320px; 
+                    background: #fff ; 
+                    padding:60px; box-sizing: 
+                    border-box;border-radius: 8px;
+                    background-color: #ffffff;
+                    box-shadow: 0 10px 40px -10px rgba(56, 73, 107, 0.1);">
+                
+                
+            </div>
+            <div style="min-height: 100px; width: 600px;padding-top: 50px">
+                <p style="font-family: Muli;
+                font-size: 12px;
+                font-weight: bold;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                text-align: center;
+                color: #8493ae;">Follow us on our social media</p>
+                <div style="height: 42px;width: 155px; margin: 20px auto 20px">
+                    <a href="https://facebook.com" target="_blank">
+                        <img src="https://demo.biomarking.org/images/fb.png" heigh="42px" width="42px" style="margin-right:10px" alt="">
+                    </a>
+                    <a href="https://instagram.com" target="_blank">
+                        <img src="https://demo.biomarking.org/images/in.png" heigh="42px" width="42px" style="margin-right:10px" alt="">
+                    </a>
+                    <a href="https://linkedin.com" target="_blank">
+                        <img src="https://demo.biomarking.org/images/ln.png" heigh="42px" width="42px" alt="">
+                    </a>
+                    <br>
+                    <h2>Hi <%= @params[:username] %></h2>
+				    <p>
+				      <%= link_to('Click here to reset your password',"https://app.biomarking.org/forgot?u=#{@params[:data]}") %>
+				    </p>
+                    
+                </div>
+                <p style="font-family: Muli;
+                font-size: 12px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                text-align: center;
+                color: #8493ae;">
+                        BioMark Pte. Ltd <br>
+                        70 South Bridge Road (corner Hong Kong St.) #05-01 Prosperity Building Singapore, 058700</p>
+                
+                <p style="text-align: center;display:block;margin-top: 30px">
+                    <a style="font-family: Muli;
+                    font-size: 12px;
+                    font-weight: bold;
+                    font-style: normal;
+                    font-stretch: normal;
+                    line-height: normal;
+                    letter-spacing: normal;
+                    text-align: center;
+                    color: #8493ae;text-decoration: none;" href="">Unsubscribe</a>
+                </p>
+                </div>
+            
+        </div>
+    </body>
 </html>
