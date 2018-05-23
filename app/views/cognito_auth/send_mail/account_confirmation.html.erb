@@ -1,6 +1,6 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <title>TEST</title>
         <style>
             *{
                 padding: 0;
@@ -8,7 +8,6 @@
             }
         </style>
         <link href="https://fonts.googleapis.com/css?family=Mukta:400,700|Muli:400,700" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     </head>
     <body style="background:#fafbfd">
         <div style="width:600px; margin:auto;display:block; box-sizing:border-box;overflow: auto;">
@@ -23,9 +22,37 @@
                     border-box;border-radius: 8px;
                     background-color: #ffffff;
                     box-shadow: 0 10px 40px -10px rgba(56, 73, 107, 0.1);">
-                
-                
+                <h2 style="font-family: Mukta; color: #273859; ">Welcome to BioMark!</h2>
+                <br>
+                <p style="font-family: Muli;
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.75;
+                letter-spacing: normal;
+                text-align: left;
+                color: #8493ae;">
+                    Gain the insights you need to start living your best life. We believe prevention is better than cure, so we’re on a mission to empower the world to take charge of their health.
+                    <br>
+                    But first, we need to make sure that this email address belongs to you.
+                </p>
+                <br>
+                <br>
+
+                <a href="http://www.google.com"><button style="width: 170px;
+                    height: 48px;
+                    text-align: center;
+                    border-radius: 44px;
+                    background-image: linear-gradient(106deg, #cc4d74, #f92969);
+                    box-shadow: 0 10px 40px 0 rgba(190, 60, 100, 0.3); 
+                    font-size: 16px; 
+                    color: #fff; 
+                    border: none">Click here to verify your account</button>
+                </a>
             </div>
+
+
             <div style="min-height: 100px; width: 600px;padding-top: 50px">
                 <p style="font-family: Muli;
                 font-size: 12px;
@@ -46,10 +73,7 @@
                     <a href="https://linkedin.com" target="_blank">
                         <img src="https://demo.biomarking.org/images/ln.png" heigh="42px" width="42px" alt="">
                     </a>
-                    <h1>Hi <%= @params[:username] %></h1>
-				    <p>
-				      <%= link_to('Click here to verify your account',"https://app.biomarking.org/verify?u=#{@params[:data]}") %>
-				    </p>
+                    
                     
                 </div>
                 <p style="font-family: Muli;
