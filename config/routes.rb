@@ -16,6 +16,7 @@ CognitoAuth::Engine.routes.draw do
         post 'update'
         post 'change_password'
         post 'update_attribute'
+        post 'confirm'
       end
     end
   end

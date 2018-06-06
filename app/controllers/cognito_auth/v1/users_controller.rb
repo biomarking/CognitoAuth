@@ -7,7 +7,29 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   before_action :initiate_encryptor , except:[:update]
 
   #update user password when admin create a temp password
-
+  def confirm
+    
+    info = client.client_get_user_info confirm_params[:username] 
+    
+    user = User.find_by_uuid info[:username]
+  
+    if user.verification_code == confirm_params[:code]
+      
+      client.client_confirm confirm_params[:username]
+      
+      res = client.client_signin confirm_params
+      
+      render json: {
+        access_token:res[:authentication_result][:access_token],
+        message:"Authenticated",
+        first_login: user.first_login,
+        has_profile: user.present?
+      }
+    else
+      render json: {confirmed:false,message:"Invalid Code"}
+    end
+   
+  end
   def change_password
     begin
       resp = client.gracefull_password_update({token:request.headers['x-biomark-token'],params:session_params})
@@ -108,5 +130,9 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   end
   def session_params
     params.require(:user).permit(:username,:password, :new_password)
+  end
+
+  def confirm_params
+    params.require(:user).permit(:username, :password, :code)
   end
 end
