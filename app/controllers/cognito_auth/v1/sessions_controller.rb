@@ -31,13 +31,28 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
 
       #create a new record
       if !user_login.present?
-        add_record res[:uuid][0]["sub"]
+        user_login = add_record res[:uuid][0]["sub"]
       end
+      
       group = client.get_group_for_user res[:uuid][0]["sub"]
       
-     
       grp_token = UserGroup.find_by_name group[0].group_name
       
+      p grp_token 
+      if grp_token.name == "patient"
+        #check if invited
+        p "------ check invitations"
+        inv = Invitation.where("username = ? && status = ?",session_params[:username],false).last
+
+        p "------ is invi #{inv.present?}"
+        if inv.present?
+          p "true"
+          inv.status = true
+          inv.save
+          Link.create({doctor_id: inv.user_id, patient_id: user_login.id})
+        end
+      end 
+
       profile = user_login.present? ? user_login.profile.present? : false
       #render
       render json: {

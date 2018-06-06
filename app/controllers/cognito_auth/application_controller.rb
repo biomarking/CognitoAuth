@@ -19,6 +19,7 @@ module CognitoAuth
       _user = User.new
       _user.uuid = uuid
       _user.save
+      _user
     end
 
     def decrypt(data)
