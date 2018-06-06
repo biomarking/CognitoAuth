@@ -12,8 +12,9 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
   end
 
   def create
+    
     res = client.client_signin session_params
-
+    
     if res[:challenge_name]
 
       case res[:challenge_name]
@@ -38,7 +39,7 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
       
       grp_token = UserGroup.find_by_name group[0].group_name
       
-      p grp_token 
+     
       if grp_token.name == "patient"
         #check if invited
         p "------ check invitations"

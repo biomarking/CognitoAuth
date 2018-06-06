@@ -40,6 +40,15 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def create
     # check if user accept the terms of service
     if user_params[:terms].present? && user_params[:terms] == true
+      
+      country = Country.find user_params[:country_id]
+
+      if user_params[:group] == "doctor"
+        
+        params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
+        p user_params[:phone_number]
+      end
+
       res = client.client_signup user_params
       # create encrypted username then pass to url
       username_encode = encrypt(user_params[:username])
@@ -95,7 +104,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing)
+    params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing,:country_id, :mobile)
   end
   def session_params
     params.require(:user).permit(:username,:password, :new_password)

@@ -122,7 +122,7 @@ module CognitoAuth
         })
         res = res.to_h
 
-       
+        
         if res[:challenge_name] && res[:challenge_name] != nil
           res
         else
@@ -130,8 +130,14 @@ module CognitoAuth
           res
         end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        # rescues all service API errors
-        raise ExceptionHandler::AuthenticationError, e.message
+        # rescues all service API 
+        err={}
+        if e.message == "User is not confirmed."
+          err[:user_confirmed] = true
+        end
+        err[:message] = e.message
+
+        raise ExceptionHandler::AuthenticationError, err.to_json
       end
     end
 
