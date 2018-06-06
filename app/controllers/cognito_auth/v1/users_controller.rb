@@ -7,6 +7,17 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   before_action :initiate_encryptor , except:[:update]
 
   #update user password when admin create a temp password
+  def resend_code
+      
+      info = client.client_get_user_info params[:email]
+
+      user = User.find_by_uuid info[:username]
+      
+      CognitoAuth::SendMail.resend_confirmation( params[:email] , user.verification_code ).deliver_later
+      render json: {sent:true}
+
+  end
+
   def confirm
     
     info = client.client_get_user_info confirm_params[:username] 
@@ -23,7 +34,8 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
         access_token:res[:authentication_result][:access_token],
         message:"Authenticated",
         first_login: user.first_login,
-        has_profile: user.present?
+        has_profile: user.present?,
+        confirmed:true
       }
     else
       render json: {confirmed:false,message:"Invalid Code"}
@@ -124,7 +136,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   end
 
   private
-
+  
   def user_params
     params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing,:country_id, :mobile)
   end
