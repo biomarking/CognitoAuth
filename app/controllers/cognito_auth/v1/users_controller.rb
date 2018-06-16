@@ -13,8 +13,13 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
 
       user = User.find_by_uuid info[:username]
       
-      CognitoAuth::SendMail.resend_confirmation( params[:email] , user.verification_code ).deliver_later
-      render json: {sent:true}
+      #generate a new verificationm code again
+      user.verification_code =  4.times.map{ SecureRandom.random_number(9)}.join
+      
+      if user.save
+        CognitoAuth::SendMail.resend_confirmation( params[:email] , user.verification_code ).deliver_later
+        render json: {sent:true}
+      end
 
   end
 
