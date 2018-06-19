@@ -82,10 +82,10 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
       
       country = Country.find user_params[:country_id]
 
-      if user_params[:group] == "doctor"
+      if user_params[:group] == "doctor" || user_params[:country_id].present?
         
         params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
-        p user_params[:phone_number]
+        
       end
 
       res = client.client_signup user_params
