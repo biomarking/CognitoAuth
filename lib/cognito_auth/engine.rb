@@ -11,6 +11,56 @@ module CognitoAuth
         end
       end
     end
+    
+    def reset_password ( options={} )
+      initialize
+      begin
+        resp = client.confirm_forgot_password({
+          client_id: client_id, # required
+          secret_hash: hmac( options[:username] ),
+          username: options[:username], # required
+          confirmation_code: options[:code],
+          password: options[:password]
+        })  
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def confirm_user_signup( options={} )
+      initialize
+      
+      begin
+        resp = client.confirm_sign_up({
+          client_id: client_id, # required
+          secret_hash: hmac( options[:username] ),
+          username: options[:username], # required
+          confirmation_code: options[:code],
+          force_alias_creation: false
+        }) 
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API errors
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+      
+
+    end
+
+    def client_forgotpassword_v2( username )
+      initialize
+      begin
+        client.forgot_password({
+          client_id: client_id, # required
+          secret_hash: hmac( username ),
+          username: username, # required
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API errors
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+      
+
+    end
 
     def validate_input
       
@@ -23,6 +73,7 @@ module CognitoAuth
       })
       res.groups
     end
+
     def self.validate_user token
       validate_token token
     end

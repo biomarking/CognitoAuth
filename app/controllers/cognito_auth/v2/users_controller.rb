@@ -6,6 +6,37 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   #added except to skip when update method is being called
   before_action :initiate_encryptor , except:[:update]
 
+  def reset_password
+
+    client.reset_password( reset_password_params )
+
+    render json: {message: :ok}
+  end
+
+  def confirm
+    
+      client.confirm_user_signup(confirm_params)
+
+      res = client.client_signin confirm_params
+      
+      render json: {
+        access_token:res[:authentication_result][:access_token],
+        message:"Authenticated",
+        first_login: user.first_login,
+        has_profile: user.present?,
+        confirmed:true
+      }
+
+  end
+
+  def forgot
+    res = client.client_forgotpassword_v2 params[:username]
+
+    p "===="
+    p res
+    p "----"
+    render json: {message: :ok}
+  end
 
   def create
     # check if user accept the terms of service
@@ -37,7 +68,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
       _user.save
       ################### EMAIL #########################
-      CognitoAuth::SendMail.account_confirmation( options , _user.verification_code ).deliver_later
+      #CognitoAuth::SendMail.account_confirmation( options , _user.verification_code ).deliver_later
       ###################################################
 
       render json: res
@@ -46,10 +77,17 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
     end
   end
 
-  
 
   private
-  
+
+  def reset_password_params
+    params.require(:user).permit(:username, :password, :code)  
+  end
+
+  def confirm_params
+    params.require(:user).permit(:username, :password, :code)
+  end
+
   def user_params
     params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing,:country_id, :mobile)
   end
