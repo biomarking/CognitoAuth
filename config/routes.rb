@@ -1,5 +1,9 @@
 CognitoAuth::Engine.routes.draw do
-
+  
+  namespace :v2, defaults: { format: :json } do
+    resources :users, only:[:create] do
+    end
+  end
   namespace :v1, defaults: { format: :json } do
 
     resources :sessions, only: [:create] do

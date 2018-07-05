@@ -11,6 +11,11 @@ module CognitoAuth
         end
       end
     end
+
+    def validate_input
+      
+    end
+
     def get_group_for_user username
       res = client.admin_list_groups_for_user({
         username: username, # required
@@ -167,6 +172,7 @@ module CognitoAuth
     def client_signup(options={})
       begin
         initialize
+        p "----"
         res = client.sign_up({
             client_id: client_id,
             secret_hash: hmac(options[:username]),
@@ -185,13 +191,17 @@ module CognitoAuth
             validation_data: [
               {
                 name: "Email", # required
-                value: "AttributeValueType",
+                value: options[:username],
               },
             ]
           })
+        p "===== ==="
+        p res
         res.to_h
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         # rescues all service API errors
+        p "errrror"
+        p e.inspect
         raise ExceptionHandler::AuthenticationError, e.message
       end
     end
