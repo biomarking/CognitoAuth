@@ -47,10 +47,10 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
     end
    
   end
-  def change_password
+  def change_password_doctor
     begin
       resp = client.gracefull_password_update({token:request.headers['x-biomark-token'],params:session_params})
-      render json: {status: true, message:"success"}
+      render json: {status: true, message:"Update successful"}
     rescue Exception => e
       render json: {status:false,message:e}
     end
