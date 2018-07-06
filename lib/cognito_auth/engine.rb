@@ -12,6 +12,22 @@ module CognitoAuth
       end
     end
     
+    def refresh_token( r_token, username )
+      initialize
+      client.initiate_auth({
+        client_id: client_id,
+        auth_flow: "REFRESH_TOKEN",
+        auth_parameters:{
+          REFRESH_TOKEN: r_token,
+          SECRET_HASH: hmac( username )
+        }
+      })
+    end
+
+    def verify_claims token
+      token = JWT.decode token, nil, false
+    end
+
     def reset_password ( options={} )
       initialize
       begin
@@ -39,11 +55,12 @@ module CognitoAuth
           force_alias_creation: false
         }) 
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        # rescues all service API errors
         raise ExceptionHandler::AuthenticationError, e.message
       end
-      
-
+      # rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+      #   # rescues all service API errors
+      #   raise ExceptionHandler::AuthenticationError, e.message
+      # end
     end
 
     def client_forgotpassword_v2( username )
@@ -58,12 +75,9 @@ module CognitoAuth
         # rescues all service API errors
         raise ExceptionHandler::AuthenticationError, e.message
       end
-      
-
     end
 
     def validate_input
-      
     end
 
     def get_group_for_user username
@@ -89,9 +103,9 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError
       end
       token
-    rescue => e
+      rescue => e
         raise ExceptionHandler::AuthenticationError, e
-    end
+      end
 
     def gracefull_password_update( options={})
       resp = client.change_password({
@@ -153,9 +167,9 @@ module CognitoAuth
       end
     end
 
-    def self.client_get_user_info(user)
+    def client_get_user_info(user)
       begin
-        # initialize
+        initialize
         res = client.admin_get_user({
           user_pool_id: pool_id,
           username: user, # required
@@ -165,6 +179,21 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError, e.message
       end
     end
+
+    def client_auth(options={})
+      begin
+        res = client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "USER_PASSWORD_AUTH",
+          auth_parameters: auth_parameters(options)
+        })
+        res = res.to_h
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API 
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
 
     def client_signin(options={})
 

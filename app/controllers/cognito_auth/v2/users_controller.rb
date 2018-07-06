@@ -6,27 +6,28 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   #added except to skip when update method is being called
   before_action :initiate_encryptor , except:[:update]
 
+  def refresh_token
+    res = client.verify_claims request.headers['x-biomark-token']
+
+    token = client.refresh_token params[:refresh_token],res[0]["username"]
+    
+    render json: token[:authentication_result]
+  end
+
   def reset_password
-
     client.reset_password( reset_password_params )
-
     render json: {message: :ok}
   end
 
   def confirm
-    
-      client.confirm_user_signup(confirm_params)
+      #confirm user
+      cn = client.confirm_user_signup(confirm_params)
 
-      res = client.client_signin confirm_params
-      
-      render json: {
-        access_token:res[:authentication_result][:access_token],
-        message:"Authenticated",
-        first_login: user.first_login,
-        has_profile: user.present?,
-        confirmed:true
-      }
+      #auth user for continues operations
+      authentication = client.client_auth confirm_params
 
+      #render output
+      render json: authentication[:authentication_result]
   end
 
   def forgot

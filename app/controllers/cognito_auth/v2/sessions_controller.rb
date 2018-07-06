@@ -7,15 +7,13 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     auth_group = request.headers['x-biomark-group']
     
     is_allowed = false
-
-    user_info = client.client_get_user_info session_params[:username]
     
-    user_group = client.get_group_for_user user_info[:username]
+    authentication = client.client_auth session_params
     
-    p "========================================" 
-    p "========================================"
-    user_group.each do |u_group|
-      if u_group[:group_name] == auth_group
+    jwks = client.verify_claims authentication[:authentication_result][:access_token]
+    
+    jwks[0]["cognito:groups"].each do |group|
+      if group == auth_group
         is_allowed = true
       end
     end
@@ -24,9 +22,13 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
       render json: {message: "Invalid account group"},status:403
       return false
     end
-    p "========================================" 
+    
+    user_login = User.find_by_uuid jwks[0]["username"]
 
-    render json: user_info
+    if !user_login.present?
+      user_login = add_record user_info[:username]
+    end
+    render json: authentication[:authentication_result]
   end
 
   private
