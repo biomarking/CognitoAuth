@@ -26,8 +26,9 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     user_login = User.find_by_uuid jwks[0]["username"]
 
     if !user_login.present?
-      user_login = add_record user_info[:username]
+      user_login = add_record jwks[0]["username"]
     end
+    authentication[:authentication_result][:has_profile] = user_login.profile.present?
     render json: authentication[:authentication_result]
   end
 

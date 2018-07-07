@@ -6,6 +6,11 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   #added except to skip when update method is being called
   before_action :initiate_encryptor , except:[:update]
 
+  def resend_code
+    res = client.resend_code params[:username]
+    render json: {message: "Confirmation Code Sent!"}
+  end
+
   def refresh_token
     res = client.verify_claims request.headers['x-biomark-token']
 

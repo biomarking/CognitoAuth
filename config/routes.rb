@@ -7,6 +7,7 @@ CognitoAuth::Engine.routes.draw do
         post 'confirm'
         post 'reset_password'
         post 'refresh_token'
+        post 'resend_code'
       end
     end
     resources :sessions, only: [:create] do

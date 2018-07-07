@@ -12,16 +12,34 @@ module CognitoAuth
       end
     end
     
+    def resend_code username 
+      
+      begin
+        initialize
+        client.resend_confirmation_code({
+          client_id: client_id,
+          secret_hash: hmac( username ),
+          username: username
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
     def refresh_token( r_token, username )
       initialize
-      client.initiate_auth({
-        client_id: client_id,
-        auth_flow: "REFRESH_TOKEN",
-        auth_parameters:{
-          REFRESH_TOKEN: r_token,
-          SECRET_HASH: hmac( username )
-        }
-      })
+      begin
+        client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "REFRESH_TOKEN",
+          auth_parameters:{
+            REFRESH_TOKEN: r_token,
+            SECRET_HASH: hmac( username )
+          }
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
     end
 
     def verify_claims token
@@ -182,6 +200,7 @@ module CognitoAuth
 
     def client_auth(options={})
       begin
+        initialize
         res = client.initiate_auth({
           client_id: client_id,
           auth_flow: "USER_PASSWORD_AUTH",
