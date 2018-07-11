@@ -8,14 +8,14 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
 
   #update user password when admin create a temp password
   def resend_code
-      
+
       info = client.client_get_user_info params[:email]
 
       user = User.find_by_uuid info[:username]
-      
+
       #generate a new verificationm code again
       user.verification_code =  4.times.map{ SecureRandom.random_number(9)}.join
-      
+
       if user.save
         CognitoAuth::SendMail.resend_confirmation( params[:email] , user.verification_code ).deliver_later
         render json: {sent:true}
@@ -24,28 +24,28 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   end
 
   def confirm
-    
-    info = client.client_get_user_info confirm_params[:username] 
-    
+
+    info = client.client_get_user_info confirm_params[:username]
+
     user = User.find_by_uuid info[:username]
-  
+
     if user.verification_code == confirm_params[:code]
-      
+
       client.client_confirm confirm_params[:username]
-      
+
       res = client.client_signin confirm_params
-      
+
       render json: {
         access_token:res[:authentication_result][:access_token],
         message:"Authenticated",
         first_login: user.first_login,
-        has_profile: user.present?,
+        has_profile: user.profile.present?,
         confirmed:true
       }
     else
       render json: {confirmed:false,message:"Invalid Code"}
     end
-   
+
   end
   def change_password_doctor
     begin
@@ -79,10 +79,10 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def create
     # check if user accept the terms of service
     if user_params[:terms].present? && user_params[:terms] == true
-      
+
       country = Country.find user_params[:country_id]
 
-      if user_params[:group] == "doctor" 
+      if user_params[:group] == "doctor"
         params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
       end
 
@@ -91,14 +91,14 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
       username_encode = encrypt(user_params[:username])
       options = { username:user_params[:username], data:username_encode }
       # send confirmation link to user
-      
+
       # attached user to specific group or default to users
       grp = user_params[:group].present? ? user_params[:group].downcase : :user
       data = { username: res[:user_sub], group: grp }
       group = client.client_add_to_group(data)
 
       ###################################################
-      ################### USER CREATE ################### 
+      ################### USER CREATE ###################
       ###################################################
       _user = User.new
       _user.uuid              = res[:user_sub]
@@ -139,7 +139,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   end
 
   private
-  
+
   def user_params
     params.require(:user).permit(:username,:password,:group,:phone_number,:terms,:marketing,:country_id, :mobile)
   end
