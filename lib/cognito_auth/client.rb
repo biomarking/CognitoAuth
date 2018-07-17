@@ -20,7 +20,9 @@ module CognitoAuth
         jwk = JSON::JWK.new jwk1
         js = JSON::JWT.decode jwt, jwk
         iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
-        unless js[:token_use] == :access || js[:iss] == iss
+        # check if params is correct and not expired
+        # trigger auth using refresh token to get new access token
+        unless js[:token_use] == :access || js[:iss] == iss || js[:iss] < Time.now.to_i
           raise ExceptionHandler::AuthenticationError
         end
         token
@@ -121,6 +123,14 @@ module CognitoAuth
             SECRET_HASH: hmac( username )
           }
         })
+    end
+
+    def client_get_user_info(user)
+      res = client.admin_get_user({
+        user_pool_id: pool_id,
+        username: user, # required
+      })
+      res = res.to_h
     end
 
     private
