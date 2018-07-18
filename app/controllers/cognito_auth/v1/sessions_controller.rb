@@ -1,6 +1,17 @@
 class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
   before_action :initiate_auth
 
+  def refresh_token
+    res = client.validate_user request.headers['x-biomark-token']
+
+    token = client.refresh_token params[:refresh_token],res[0]["username"]
+
+    render json: {
+      access_token: token[:authentication_result][:access_token],
+      expires_in: token[:authentication_result][:expires_in]
+    }
+  end
+
 
   def verify
     client.validate_user( request.headers['x-biomark-token'] )
@@ -12,9 +23,9 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
   end
 
   def create
-    
+
     res = client.client_signin session_params
-    
+
     if res[:challenge_name]
 
       case res[:challenge_name]
@@ -34,12 +45,12 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
       if !user_login.present?
         user_login = add_record res[:uuid][0]["sub"]
       end
-      
+
       group = client.get_group_for_user res[:uuid][0]["sub"]
-      
+
       grp_token = UserGroup.find_by_name group[0].group_name
-      
-     
+
+
       if grp_token.name == "patient"
         #check if invited
         p "------ check invitations"
@@ -52,12 +63,14 @@ class CognitoAuth::V1::SessionsController < CognitoAuth::ApplicationController
           inv.save
           Link.create({doctor_id: inv.user_id, patient_id: user_login.id})
         end
-      end 
+      end
 
       profile = user_login.present? ? user_login.profile.present? : false
       #render
       render json: {
         access_token:res[:authentication_result][:access_token],
+        refresh_token:res[:authentication_result][:refresh_token],
+        expires_in: res[:authentication_result][:expires_in],
         message:"Authenticated",
         first_login: !user_login.present?,
         has_profile: profile,
