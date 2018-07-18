@@ -14,7 +14,11 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   def refresh_token
     res = auth_client.validate_token request.headers['x-biomark-token']
     token = auth_client.init.refresh_token params[:refresh_token],res[0]["username"]
-    render json: token[:authentication_result]
+    render json: {
+      access_token: token[:authentication_result][:access_token],
+      expires_in: token[:authentication_result][:expires_in]
+    }
+    
   end
 
   def reset_password
@@ -109,6 +113,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user.first_login       = true
       _user.qr_code           = res[:user_sub]
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
+      _user.marketing         = user_params[:marketing]
       _user.save
 
       render json: res
