@@ -136,7 +136,10 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
         raise ActionController::ParameterMissing
       end
 
-      params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
+      if user_params[:mobile].present?
+          params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
+      end
+      
       # execute signup
       res = auth_client.init.client_signup user_params
       # attached user to specific group or default to users
