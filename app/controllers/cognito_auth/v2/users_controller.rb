@@ -18,7 +18,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       access_token: token[:authentication_result][:access_token],
       expires_in: token[:authentication_result][:expires_in]
     }
-    
+
   end
 
   def reset_password
@@ -100,7 +100,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       if user_params[:mobile].present?
           params[:user][:phone_number] = "#{country.dial_code}#{user_params[:mobile]}"
       end
-      
+
       # execute signup
       res = auth_client.init.client_signup user_params
       # attached user to specific group or default to users
@@ -116,7 +116,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user.first_login       = true
       _user.qr_code           = res[:user_sub]
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
-      _user.marketing         = user_params[:marketing]
+      _user.marketing         = user_params[:marketing] if user_params[:marketing].present?
       _user.save
 
       render json: res
