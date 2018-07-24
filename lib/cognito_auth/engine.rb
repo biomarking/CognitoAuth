@@ -226,7 +226,7 @@ module CognitoAuth
         })
         res = res.to_h
 
-        
+
         if res[:challenge_name] && res[:challenge_name] != nil
           res
         else
@@ -234,7 +234,7 @@ module CognitoAuth
           res
         end
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        # rescues all service API 
+        # rescues all service API
         err={}
         if e.message == "User is not confirmed."
           err[:user_confirmed] = true
@@ -400,8 +400,25 @@ module CognitoAuth
       end
     end
 
+    def refresh_token( r_token, username )
+      begin
+        res = client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "REFRESH_TOKEN",
+          auth_parameters:{
+            REFRESH_TOKEN: r_token,
+            SECRET_HASH: hmac( username )
+          }
+        })
+        res = res.to_h
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+          raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+
     private
-    
+
     def initialize
       @client = Aws::CognitoIdentityProvider::Client.new
       @client_id = CognitoAuth.configuration.client_id

@@ -37,6 +37,8 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
 
       render json: {
         access_token:res[:authentication_result][:access_token],
+        refresh_token:res[:authentication_result][:refresh_token],
+        expires_in: res[:authentication_result][:expires_in],
         message:"Authenticated",
         first_login: user.first_login,
         has_profile: user.profile.present?,

@@ -1,5 +1,5 @@
 CognitoAuth::Engine.routes.draw do
-  
+
   namespace :v2, defaults: { format: :json } do
     resources :users, only:[:create] do
       collection do
@@ -22,6 +22,7 @@ CognitoAuth::Engine.routes.draw do
       collection do
         post 'destroy'
         post 'verify'
+        post 'refresh_token'
       end
     end
 
