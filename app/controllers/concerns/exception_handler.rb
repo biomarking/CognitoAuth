@@ -47,7 +47,7 @@ module ExceptionHandler
         status:"error",
         code: 4007,
         message: e.message
-      }
+      }, status: 422
     end
   end
 

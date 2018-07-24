@@ -11,9 +11,9 @@ module CognitoAuth
         end
       end
     end
-    
-    def resend_code username 
-      
+
+    def resend_code username
+
       begin
         initialize
         client.resend_confirmation_code({
@@ -55,7 +55,7 @@ module CognitoAuth
           username: options[:username], # required
           confirmation_code: options[:code],
           password: options[:password]
-        })  
+        })
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         raise ExceptionHandler::AuthenticationError, e.message
       end
@@ -63,7 +63,7 @@ module CognitoAuth
 
     def confirm_user_signup( options={} )
       initialize
-      
+
       begin
         resp = client.confirm_sign_up({
           client_id: client_id, # required
@@ -71,7 +71,7 @@ module CognitoAuth
           username: options[:username], # required
           confirmation_code: options[:code],
           force_alias_creation: false
-        }) 
+        })
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
         raise ExceptionHandler::AuthenticationError, e.message
       end
@@ -116,7 +116,7 @@ module CognitoAuth
       jwk1 = CognitoAuth.configuration.jwks["keys"].detect { |jwk| jwk["kid"] == kid }
       jwk = JSON::JWK.new jwk1
       js = JSON::JWT.decode jwt, jwk
-      iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{pool_id}"
+      iss = "https://cognito-idp.#{ENV["AWS_REGION"]}.amazonaws.com/#{CognitoAuth.configuration.pool_id}"
       unless js[:token_use] == :access || js[:iss] == iss
         raise ExceptionHandler::AuthenticationError
       end
@@ -208,7 +208,7 @@ module CognitoAuth
         })
         res = res.to_h
       rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        # rescues all service API 
+        # rescues all service API
         raise ExceptionHandler::AuthenticationError, e.message
       end
     end
