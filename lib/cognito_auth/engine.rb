@@ -11,9 +11,91 @@ module CognitoAuth
         end
       end
     end
+    
+    def resend_code username 
+      
+      begin
+        initialize
+        client.resend_confirmation_code({
+          client_id: client_id,
+          secret_hash: hmac( username ),
+          username: username
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def refresh_token( r_token, username )
+      initialize
+      begin
+        client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "REFRESH_TOKEN",
+          auth_parameters:{
+            REFRESH_TOKEN: r_token,
+            SECRET_HASH: hmac( username )
+          }
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def verify_claims token
+      token = JWT.decode token, nil, false
+    end
+
+    def reset_password ( options={} )
+      initialize
+      begin
+        resp = client.confirm_forgot_password({
+          client_id: client_id, # required
+          secret_hash: hmac( options[:username] ),
+          username: options[:username], # required
+          confirmation_code: options[:code],
+          password: options[:password]
+        })  
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
+    def confirm_user_signup( options={} )
+      initialize
+      
+      begin
+        resp = client.confirm_sign_up({
+          client_id: client_id, # required
+          secret_hash: hmac( options[:username] ),
+          username: options[:username], # required
+          confirmation_code: options[:code],
+          force_alias_creation: false
+        }) 
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+      # rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+      #   # rescues all service API errors
+      #   raise ExceptionHandler::AuthenticationError, e.message
+      # end
+    end
+
+    def client_forgotpassword_v2( username )
+      initialize
+      begin
+        client.forgot_password({
+          client_id: client_id, # required
+          secret_hash: hmac( username ),
+          username: username, # required
+        })
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API errors
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
 
     def validate_input
-
     end
 
     def get_group_for_user username
@@ -23,6 +105,7 @@ module CognitoAuth
       })
       res.groups
     end
+
     def self.validate_user token
       validate_token token
     end
@@ -38,9 +121,9 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError
       end
       token
-    rescue => e
+      rescue => e
         raise ExceptionHandler::AuthenticationError, e
-    end
+      end
 
     def gracefull_password_update( options={})
       resp = client.change_password({
@@ -102,9 +185,9 @@ module CognitoAuth
       end
     end
 
-    def self.client_get_user_info(user)
+    def client_get_user_info(user)
       begin
-        # initialize
+        initialize
         res = client.admin_get_user({
           user_pool_id: pool_id,
           username: user, # required
@@ -114,6 +197,22 @@ module CognitoAuth
         raise ExceptionHandler::AuthenticationError, e.message
       end
     end
+
+    def client_auth(options={})
+      begin
+        initialize
+        res = client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "USER_PASSWORD_AUTH",
+          auth_parameters: auth_parameters(options)
+        })
+        res = res.to_h
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+        # rescues all service API 
+        raise ExceptionHandler::AuthenticationError, e.message
+      end
+    end
+
 
     def client_signin(options={})
 

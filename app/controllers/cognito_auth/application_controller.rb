@@ -4,10 +4,19 @@ module CognitoAuth
     include ExceptionHandler
     # protect_from_forgery with: :exception
     attr_reader :client, :encryptor
+    attr_accessor :auth_client
 
+    def sample
+        a = auth_client.init.sample
+        render json: { data: a}
+    end
 
     def initiate_auth
       @client = CognitoAuth::Engine
+    end
+
+    def auth_client
+      @client = CognitoAuth::Client
     end
 
     def encrypt(data)

@@ -1,5 +1,6 @@
 require "cognito_auth/configuration"
 require "cognito_auth/engine"
+require "cognito_auth/client"
 require "cognito_auth/version"
 require 'encryption'
 require 'jwt'

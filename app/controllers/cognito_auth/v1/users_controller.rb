@@ -10,7 +10,7 @@ class CognitoAuth::V1::UsersController < CognitoAuth::ApplicationController
   def resend_code
 
       info = client.client_get_user_info params[:email]
-
+      
       user = User.find_by_uuid info[:username]
 
       #generate a new verificationm code again
