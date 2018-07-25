@@ -49,7 +49,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     end
 
     if !is_allowed
-      render json: {message: "Invalid account group"},status:403
+      raise ExceptionHandler::InvalidGroup
       return false
     end
 

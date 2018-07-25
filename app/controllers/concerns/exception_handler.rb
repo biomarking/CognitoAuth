@@ -10,6 +10,7 @@ module ExceptionHandler
   class DecodeError < StandardError; end
   class TermsError < StandardError; end
   class CountryNotFound < StandardError; end
+  class InvalidGroup < StandardError; end
 
   included do
     # Define custom handlers
@@ -21,6 +22,7 @@ module ExceptionHandler
     rescue_from ExceptionHandler::DecodeError, with: :four_zero_one
     rescue_from ExceptionHandler::TermsError, with: :terms_error
     rescue_from ExceptionHandler::CountryNotFound, with: :country_error
+    rescue_from ExceptionHandler::InvalidGroup, with: :group_error
     rescue_from ArgumentError, with: :argument_error
     rescue_from ExceptionHandler::AcessDenied, with: :unauthorized_access
     rescue_from Aws::CognitoIdentityProvider::Errors::UserNotFoundException, with: :unauthorized_access
@@ -91,7 +93,7 @@ module ExceptionHandler
       code: 4004,
       message: "Invalid request"
     },
-    status: :unauthorized
+    status: 400
   end
 
   # JSON response with message for terms error
@@ -171,7 +173,17 @@ module ExceptionHandler
       code: 4012,
       message: "Invalid token"
     },
-    status: :unprocessable_entity
+    status: 400
+  end
+
+  # JSON response with message for invalid group error
+  def group_error
+    render json: {
+      status: "error",
+      code: 4013,
+      message: "Invalid account group"
+    },
+    status: 403
   end
 
   # JSON response with message; Status code 422 - unprocessable entity
