@@ -65,6 +65,28 @@ module CognitoAuth
         res.to_h
     end
 
+    def client_create(options={})
+        res = client.sign_up({
+            client_id: client_id,
+            secret_hash: hmac(options[:username]),
+            username: options[:username], # required
+            password: options[:password], # required
+            user_attributes: [
+              {
+                name: "email", # required
+                value: options[:username],
+              }
+            ],
+            validation_data: [
+              {
+                name: "Email", # required
+                value: options[:username],
+              },
+            ]
+          })
+        res.to_h
+    end
+
     def client_add_to_group(options={})
         res = client.admin_add_user_to_group({
           user_pool_id: pool_id, # required

@@ -32,6 +32,7 @@ module ExceptionHandler
     rescue_from Aws::CognitoIdentityProvider::Errors::CodeMismatchException, with: :code_mismatch
     rescue_from Aws::CognitoIdentityProvider::Errors::InvalidPasswordException, with: :invalid_password
     rescue_from Aws::CognitoIdentityProvider::Errors::ExpiredCodeException, with: :expired_code
+    rescue_from Aws::CognitoIdentityProvider::Errors::LimitExceededException, with: :attempt_exceed
     rescue_from ActionController::ParameterMissing, with: :argument_error
     rescue_from JSON::JWK::UnknownAlgorithm, with: :jwk_error
     rescue_from JWT::DecodeError, with: :invalid_token
@@ -182,6 +183,16 @@ module ExceptionHandler
       status: "error",
       code: 4013,
       message: "Invalid account group"
+    },
+    status: 403
+  end
+
+  # JSON response with message for attempt exceed limit
+  def attempt_exceed
+    render json: {
+      status: "error",
+      code: 4014,
+      message: "Attempt limit exceeded, please try after some time."
     },
     status: 403
   end

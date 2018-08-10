@@ -126,6 +126,38 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
     end
   end
 
+  def signup
+    # check if user accept the terms of service
+    if user_params[:terms].present? && user_params[:terms] == true
+
+      unless user_params[:group].present?
+        raise ActionController::ParameterMissing
+      end
+
+      # execute signup
+      res = auth_client.init.client_create user_params
+      # attached user to specific group or default to users
+      grp = user_params[:group].present? ? user_params[:group].downcase : :user
+      data = { username: res[:user_sub], group: grp }
+      group = auth_client.init.client_add_to_group(data)
+
+      ###################################################
+      ################### USER CREATE ###################
+      ###################################################
+      _user = User.new
+      _user.uuid              = res[:user_sub]
+      _user.first_login       = true
+      _user.qr_code           = res[:user_sub]
+      _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
+      _user.marketing         = user_params[:marketing] if user_params[:marketing].present?
+      _user.save
+
+      render json: res
+    else
+      raise ExceptionHandler::TermsError
+    end
+  end
+
 
   private
 
