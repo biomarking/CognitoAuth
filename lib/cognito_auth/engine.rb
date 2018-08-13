@@ -360,6 +360,7 @@ module CognitoAuth
 
     def client_change_password(params,token)
       begin
+        initialize
         resp = client.change_password({
           previous_password: params["password"], # required
           proposed_password: params["new_password"], # required
