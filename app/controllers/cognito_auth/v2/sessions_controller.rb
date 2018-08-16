@@ -61,7 +61,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
 
     if user_login.qr_code.nil?
       uid = user_login.id.to_s.rjust(5, '0')
-      random = ('0'..'z').to_a.shuffle.first(3).join.upcase
+      random = ('0'..'z').to_a.shuffle.first(4).join.upcase
       user_login.qr_code = "MD-#{random}#{uid}"
       user_login.save
     end
