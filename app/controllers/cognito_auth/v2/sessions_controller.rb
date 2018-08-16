@@ -58,6 +58,14 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     if !user_login.present?
       user_login = add_record jwks[0]["username"]
     end
+
+    if user_login.qr_code.nil?
+      uid = user_login.id.to_s.rjust(5, '0')
+      random = (0...50).map { o[rand(o.length)] }.join.upcase
+      user_login.qr_code = "MD-#{random}#{uid}"
+      user_login.save
+    end
+
     # check if profile is present
     profile = user_login.present? ? user_login.profile.present? : false
 
