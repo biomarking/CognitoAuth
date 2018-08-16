@@ -63,7 +63,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
       uid = user_login.id.to_s.rjust(5, '0')
       random = ('0'..'z').to_a.shuffle.first(3).join.upcase
       user_login.qr_code = "MD-#{random}#{uid}"
-      user_login
+      user_login.save
     end
 
     # check if profile is present
