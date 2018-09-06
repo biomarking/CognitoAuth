@@ -39,39 +39,62 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     is_allowed = false
     # authenticate user
     res = auth_client.init.login(session_params)
-    # validate json web token issuer
-    jwks = auth_client.validate_token res[:authentication_result][:access_token]
-    # check group if allowed
-    jwks[0]["cognito:groups"].each do |group|
-      if group == auth_group
-        is_allowed = true
-      end
-    end
 
-    if !is_allowed
-      raise ExceptionHandler::InvalidGroup
+    if res[:challenge_name] && res[:challenge_name] == "NEW_PASSWORD_REQUIRED"
+      render json: {
+        access_token:nil,
+        message:res[:challenge_name]
+      }
       return false
     end
 
-    user_login = User.find_by_uuid jwks[0]["username"]
-    # create new user
-    if !user_login.present?
-      user_login = add_record jwks[0]["username"]
-    end
-    # check if profile is present
-    profile = user_login.present? ? user_login.profile.present? : false
+      # validate json web token issuer
+      jwks = auth_client.validate_token res[:authentication_result][:access_token]
+      # check group if allowed
+      jwks[0]["cognito:groups"].each do |group|
+        if group == auth_group
+          is_allowed = true
+        end
+      end
 
+      if !is_allowed
+        raise ExceptionHandler::InvalidGroup
+        return false
+      end
+
+      user_login = User.find_by_uuid jwks[0]["username"]
+      # create new user
+      if !user_login.present?
+        user_login = add_record jwks[0]["username"]
+      end
+      # check if profile is present
+      profile = user_login.present? ? user_login.profile.present? : false
+
+      render json: {
+        access_token:res[:authentication_result][:access_token],
+        refresh_token:res[:authentication_result][:refresh_token],
+        expires_in: res[:authentication_result][:expires_in],
+        message:"Authenticated",
+        first_login: !user_login.present?,
+        has_profile: profile
+      }
+  end
+
+  def update_password
+    res = auth_client.init.client_update_password update_password_params
+    p res.inspect
     render json: {
       access_token:res[:authentication_result][:access_token],
       refresh_token:res[:authentication_result][:refresh_token],
-      expires_in: res[:authentication_result][:expires_in],
-      message:"Authenticated",
-      first_login: !user_login.present?,
-      has_profile: profile
+      expires_in: res[:authentication_result][:expires_in]
     }
   end
 
   private
+
+  def update_password_params
+    params.require(:session).permit(:username, :password, :new_password)
+  end
 
   def session_params
     params.require(:session).permit(:username,:password,:group)

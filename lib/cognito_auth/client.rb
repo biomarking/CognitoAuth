@@ -12,6 +12,36 @@ module CognitoAuth
       self
     end
 
+    def client_update_password( options={} )
+        # verify that the user state is really NEW_PASSWORD_REQUIRED
+        # this stage can be remove if all challenge requirement are sent to user but for security just verify and proceed to solve the challenge response
+        res = client.initiate_auth({
+          client_id: client_id,
+          auth_flow: "USER_PASSWORD_AUTH",
+          auth_parameters: auth_parameters(options)
+        })
+        #verify if the challenge requirement is NEW_PASSWORD_REQUIRED
+        if res.challenge_name && res.challenge_name == "NEW_PASSWORD_REQUIRED"
+          #process the challenge NEW_PASSWORD_REQUIRED
+          resp = client.admin_respond_to_auth_challenge({
+            user_pool_id: pool_id, # required
+            client_id: client_id, # required
+            challenge_name: "NEW_PASSWORD_REQUIRED",
+            challenge_responses: {
+              "USERNAME" =>res.challenge_parameters["USER_ID_FOR_SRP"],
+              "NEW_PASSWORD" => options[:new_password],
+              "SECRET_HASH" => hmac(res.challenge_parameters["USER_ID_FOR_SRP"]),
+            },
+            session: res.session
+          })
+          df = validate_token(resp.authentication_result.access_token)
+          resp.to_h
+        else
+          df = validate_token(res[:authentication_result][:access_token])
+          res.to_h
+        end
+    end
+
     def validate_token(jwt)
       # begin
         token = JWT.decode jwt, nil, false

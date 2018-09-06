@@ -13,7 +13,7 @@ CognitoAuth::Engine.routes.draw do
     end
     resources :sessions, only: [:create] do
       collection do
-
+        post 'update_password'
       end
     end
   end
