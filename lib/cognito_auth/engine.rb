@@ -374,6 +374,7 @@ module CognitoAuth
     def client_update_attribute(params,token)
       df = validate_token(token)
       begin
+        initialize
         res = client.admin_update_user_attributes({
           user_pool_id: pool_id, # required
           username: df[0]["username"], # required
