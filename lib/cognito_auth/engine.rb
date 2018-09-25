@@ -392,7 +392,7 @@ module CognitoAuth
             },
             {
               name: "phone_number_verified", # required
-              value: "true",
+              value: "false",
             }
           ],
         })
