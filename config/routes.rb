@@ -14,6 +14,9 @@ CognitoAuth::Engine.routes.draw do
     resources :sessions, only: [:create] do
       collection do
         post 'update_password'
+        post 'associate_token'
+        post 'verify_token'
+        post 'mfa_challenge'
       end
     end
   end

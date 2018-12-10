@@ -48,6 +48,15 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
       return false
     end
 
+    # for MFA check
+    if res[:challenge_name] && res[:challenge_name] == "SOFTWARE_TOKEN_MFA"
+      render json: {
+        access_token:nil,
+        message:res[:challenge_name]
+      }
+      return false
+    end
+
       # validate json web token issuer
       jwks = auth_client.validate_token res[:authentication_result][:access_token]
       # check group if allowed
@@ -98,6 +107,22 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     }
   end
 
+  def associate_token
+    res = auth_client.init.associate_software_token associate_params
+    render json: res
+  end
+
+  def verify_token
+    res = auth_client.init.verify_software_token associate_params
+    mfa = auth_client.init.set_user_mfa_preference associate_params
+    render json: res
+  end
+
+  def mfa_challenge
+    res = auth_client.init.mfa_challenge mfa_params
+    render json: res
+  end
+
   private
 
   def update_password_params
@@ -106,5 +131,13 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
 
   def session_params
     params.require(:session).permit(:username,:password,:group)
+  end
+
+  def associate_params
+    params.require(:session).permit(:access_token,:secret_code)
+  end
+
+  def mfa_params
+    params.require(:session).permit(:username,:password,:secret_code)
   end
 end

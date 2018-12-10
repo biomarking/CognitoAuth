@@ -33,6 +33,7 @@ module ExceptionHandler
     rescue_from Aws::CognitoIdentityProvider::Errors::InvalidPasswordException, with: :invalid_password
     rescue_from Aws::CognitoIdentityProvider::Errors::ExpiredCodeException, with: :expired_code
     rescue_from Aws::CognitoIdentityProvider::Errors::LimitExceededException, with: :attempt_exceed
+    rescue_from Aws::CognitoIdentityProvider::Errors::EnableSoftwareTokenMFAException, with: :code_mismatch
     rescue_from ActionController::ParameterMissing, with: :argument_error
     rescue_from JSON::JWK::UnknownAlgorithm, with: :jwk_error
     rescue_from JWT::DecodeError, with: :invalid_token

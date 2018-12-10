@@ -12,6 +12,65 @@ module CognitoAuth
       self
     end
 
+    def mfa_challenge(options={})
+
+      res = client.initiate_auth({
+        client_id: client_id,
+        auth_flow: "USER_PASSWORD_AUTH",
+        auth_parameters: auth_parameters(options)
+      })
+      #verify if the challenge requirement is SOFTWARE_TOKEN_MFA
+      if res.challenge_name && res.challenge_name == "SOFTWARE_TOKEN_MFA"
+        #process the challenge SOFTWARE_TOKEN_MFA
+        resp = client.admin_respond_to_auth_challenge({
+          user_pool_id: pool_id, # required
+          client_id: client_id, # required
+          challenge_name: "SOFTWARE_TOKEN_MFA",
+          challenge_responses: {
+            "USERNAME" =>res.challenge_parameters["USER_ID_FOR_SRP"],
+            "SOFTWARE_TOKEN_MFA_CODE" => options[:secret_code],
+            "SECRET_HASH" => hmac(res.challenge_parameters["USER_ID_FOR_SRP"]),
+          },
+          session: res.session
+        })
+        df = validate_token(resp.authentication_result.access_token)
+        resp.to_h
+      else
+        df = validate_token(res[:authentication_result][:access_token])
+        res.to_h
+      end
+    end
+
+    def set_user_mfa_preference(options={})
+      resp = client.set_user_mfa_preference({
+        sms_mfa_settings: {
+          enabled: false,
+          preferred_mfa: false,
+        },
+        software_token_mfa_settings: {
+          enabled: true,
+          preferred_mfa: true,
+        },
+        access_token: options[:access_token], # required
+      })
+      resp.to_h
+    end
+
+    def associate_software_token(options={})
+      resp = client.associate_software_token({
+        access_token: options[:access_token]
+      })
+      resp.to_h
+    end
+
+    def verify_software_token(options={})
+      resp = client.verify_software_token({
+        access_token: options[:access_token],
+        user_code: options[:secret_code]
+      })
+      resp.to_h
+    end
+
     def client_update_password( options={} )
         # verify that the user state is really NEW_PASSWORD_REQUIRED
         # this stage can be remove if all challenge requirement are sent to user but for security just verify and proceed to solve the challenge response
