@@ -108,8 +108,33 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
   end
 
   def associate_token
-    res = auth_client.init.associate_software_token associate_params
-    render json: res
+    auth_group = request.headers['x-biomark-group']
+    is_allowed = false
+
+    resp = auth_client.init.associate_software_token associate_params
+
+    res = auth_client.init.login(session_params)
+    jwks = auth_client.validate_token res[:authentication_result][:access_token]
+    p jwks
+    # check group if allowed
+    jwks[0]["cognito:groups"].each do |group|
+      if group == auth_group
+        is_allowed = true
+      end
+    end
+
+    if !is_allowed
+      raise ExceptionHandler::InvalidGroup
+      return false
+    end
+
+    user_login = User.find_by_uuid jwks[0]["username"]
+    # create new user
+    if !user_login.present?
+      user_login = add_record jwks[0]["username"]
+    end
+    
+    render json: resp
   end
 
   def verify_token
@@ -134,7 +159,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
   end
 
   def associate_params
-    params.require(:session).permit(:access_token,:secret_code)
+    params.require(:session).permit(:access_token,:secret_code,:username, :password)
   end
 
   def mfa_params
