@@ -144,7 +144,29 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
   end
 
   def mfa_challenge
+    auth_group = request.headers['x-biomark-group']
+    is_allowed = false
+
     res = auth_client.init.mfa_challenge mfa_params
+    #check if user exists
+    jwks = auth_client.validate_token res[:authentication_result][:access_token]
+    # check group if allowed
+    jwks[0]["cognito:groups"].each do |group|
+      if group == auth_group
+        is_allowed = true
+      end
+    end
+
+    if !is_allowed
+      raise ExceptionHandler::InvalidGroup
+      return false
+    end
+
+    user_login = User.find_by_uuid jwks[0]["username"]
+    # create new user if user does not exist
+    if !user_login.present?
+      user_login = add_record jwks[0]["username"]
+    end
     render json: res
   end
 
