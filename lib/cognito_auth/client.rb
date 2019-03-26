@@ -155,24 +155,36 @@ module CognitoAuth
     end
 
     def client_create(options={})
+      user_attributes = []
+      validation_data = []
+      if options[:username].include? "@"
+        user_attributes << { name:"email", value: options[:username] }
+        validation_data << { name:"Email", value: options[:username] }
+      else
+        user_attributes << { name:"phone_number", value: options[:username] }
+        validation_data << { name:"PhoneNumber", value: options[:username] }
+      end 
         res = client.sign_up({
             client_id: client_id,
             secret_hash: hmac(options[:username]),
             username: options[:username], # required
             password: options[:password], # required
-            user_attributes: [
-              {
-                name: "email", # required
-                value: options[:username],
-              }
-            ],
-            validation_data: [
-              {
-                name: "Email", # required
-                value: options[:username],
-              },
-            ]
+            user_attributes: user_attributes,
+            validation_data: user_attributes
+            # user_attributes: [
+            #   {
+            #     name: "email", # required
+            #     value: options[:username],
+            #   }
+            # ],
+            # validation_data: [
+            #   {
+            #     name: "Email", # required
+            #     value: options[:username],
+            #   },
+            # ]
           })
+          p user_attributes.inspect
         res.to_h
     end
 
