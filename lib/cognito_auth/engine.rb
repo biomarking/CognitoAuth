@@ -126,6 +126,7 @@ module CognitoAuth
       end
 
     def gracefull_password_update( options={})
+      initialize
       resp = client.change_password({
         previous_password: options[:params][:password], # required
         proposed_password: options[:params][:new_password], # required
