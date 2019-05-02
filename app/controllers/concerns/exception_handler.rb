@@ -11,6 +11,8 @@ module ExceptionHandler
   class TermsError < StandardError; end
   class CountryNotFound < StandardError; end
   class InvalidGroup < StandardError; end
+  class PatientForgotError < StandardError; end
+  class DoctorForgotError < StandardError; end
 
   included do
     # Define custom handlers
@@ -37,6 +39,8 @@ module ExceptionHandler
     rescue_from ActionController::ParameterMissing, with: :argument_error
     rescue_from JSON::JWK::UnknownAlgorithm, with: :jwk_error
     rescue_from JWT::DecodeError, with: :invalid_token
+    rescue_from ExceptionHandler::PatientForgotError, with: :email_or_mobile_error
+    rescue_from ExceptionHandler::DoctorForgotError, with: :email_error
 
     rescue_from ActiveRecord::RecordNotFound do |e|
      render json: { message: e.message }, status: :not_found
@@ -217,4 +221,25 @@ module ExceptionHandler
   def unauthorized_request(e)
     render json: { message: e.message }, status: :unauthorized
   end
+
+  def email_or_mobile_error(e)
+    render json:{
+      status: "error",
+      code: 4015,
+      message: "The email or mobile number you inputted is incorrect"
+    },
+    status: 401
+  end
+
+  def email_error(e)
+    render json:{
+      status: "error",
+      code: 4016,
+      message: "The email you inputted is incorrect"
+    },
+    status: 401
+  end
+
+
+
 end
