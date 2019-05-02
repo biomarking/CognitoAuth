@@ -72,7 +72,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   end
 
   def forgot
-    res = auth_client.init.client_forgotpassword params[:username]
+    res = auth_client.init.client_forgotpassword_patient params[:username]
 
     p "===="
     p res
@@ -80,6 +80,14 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
     render json: res
   end
 
+  def forgot_doctor
+    res = auth_client.init.client_forgotpassword_doctor params[:username]
+
+    p "===="
+    p res
+    p "----"
+    render json: res
+  end
 
   def create
     # check if user accept the terms of service

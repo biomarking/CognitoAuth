@@ -217,13 +217,30 @@ module CognitoAuth
         })
     end
 
-    def client_forgotpassword( username )
+    def client_forgotpassword_patient( username )
+      begin
         res = client.forgot_password({
           client_id: client_id, # required
           secret_hash: hmac( username ),
           username: username, # required
         })
         res.to_h
+      rescue
+        raise ExceptionHandler::PatientForgotError
+      end
+    end
+
+    def client_forgotpassword_doctor( username )
+      begin
+        res = client.forgot_password({
+          client_id: client_id, # required
+          secret_hash: hmac( username ),
+          username: username, # required
+        })
+        res.to_h
+      rescue
+        raise ExceptionHandler::DoctorForgotError
+      end
     end
 
     def reset_password ( options={} )
