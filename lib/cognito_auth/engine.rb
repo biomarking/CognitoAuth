@@ -367,8 +367,8 @@ module CognitoAuth
           proposed_password: params["new_password"], # required
           access_token: token, # required
         })
-      rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-        raise ExceptionHandler::AuthenticationError, e.message
+      rescue Aws::CognitoIdentityProvider::Errors::ServiceError
+        raise ExceptionHandler::ChangePasswordError
       end
     end
 
