@@ -123,6 +123,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user = User.new
       _user.uuid              = res[:user_sub]
       _user.first_login       = true
+      _user.user_type_id      = user_params[:group] == "patient" ? 1 : 2
       _user.qr_code           = res[:user_sub]
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
       _user.marketing         = user_params[:marketing] if user_params[:marketing].present?
@@ -156,6 +157,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user.uuid              = res[:user_sub]
       _user.first_login       = true
       _user.qr_code           = res[:user_sub]
+      _user.user_type_id      = user_params[:group] == "patient" ? 1 : 2
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
       _user.marketing         = user_params[:marketing] if user_params[:marketing].present?
       _user.save
