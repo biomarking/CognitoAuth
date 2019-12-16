@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cognito_auth (0.4.2)
+    cognito_auth (0.4.3)
       aws-sdk-cognitoidentityprovider (~> 1.31.0)
       encryption
       json-jwt
