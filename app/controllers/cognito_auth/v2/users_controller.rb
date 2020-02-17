@@ -142,6 +142,10 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       unless user_params[:group].present?
         raise ActionController::ParameterMissing
       end
+      
+      if user_params[:username].starts_with?("+63") && user_params[:username][3].starts_with?("0")
+        raise ExceptionHandler::InvalidMobile
+      end
 
       # execute signup
       res = auth_client.init.client_create user_params
