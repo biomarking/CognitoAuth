@@ -14,6 +14,7 @@ module ExceptionHandler
   class PatientForgotError < StandardError; end
   class DoctorForgotError < StandardError; end
   class ChangePasswordError < StandardError; end
+  class InvalidMobile < StandardError; end
 
   included do
     # Define custom handlers
@@ -43,6 +44,7 @@ module ExceptionHandler
     rescue_from ExceptionHandler::PatientForgotError, with: :email_or_mobile_error
     rescue_from ExceptionHandler::DoctorForgotError, with: :email_error
     rescue_from ExceptionHandler::ChangePasswordError, with: :password_change_error
+    rescue_from ExceptionHandler::InvalidMobile, with: :mobile_error
 
     rescue_from ActiveRecord::RecordNotFound do |e|
      render json: { message: e.message }, status: :not_found
@@ -247,6 +249,15 @@ module ExceptionHandler
       status: "error",
       code: 4017,
       message: "Password is incorrect"
+    },
+    status: 401
+  end
+
+  def mobile_error(e)
+    render json:{
+      status: "error",
+      code: 4018,
+      message: "The mobile number you inputted is incorrect"
     },
     status: 401
   end
