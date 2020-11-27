@@ -12,6 +12,57 @@ module CognitoAuth
       self
     end
 
+    def migrate_pool(options={})
+      client.admin_initiate_auth({
+        client_id: options[:client_id],
+        user_pool_id: options[:pool_id],
+        auth_flow: "ADMIN_USER_PASSWORD_AUTH",
+        auth_parameters: {
+          SECRET_HASH: mhmac(options[:username], options[:client_id], options[:client_secret]),
+          USERNAME: options[:username],
+          PASSWORD: options[:password]
+        }
+      })
+      # get user attributes
+      old_user = client.admin_get_user({
+        user_pool_id: options[:pool_id],
+        username: options[:username],
+      })
+
+      # create user
+      client.admin_create_user({
+        user_pool_id: pool_id,
+        username: options[:username],
+        user_attributes: old_user.user_attributes.delete_if { |h| h["name"] == "sub" },
+        force_alias_creation: false,
+        message_action: "SUPPRESS",
+        desired_delivery_mediums: nil,
+      })
+
+      # set password
+      client.admin_set_user_password({
+        user_pool_id: pool_id,
+        username: options[:username],
+        password: options[:password],
+        permanent: true,
+      })
+
+      # list user group
+      list = client.admin_list_groups_for_user({
+        username: options[:username],
+        user_pool_id: options[:pool_id]
+      })
+      # add user to group
+      list.groups.each do |grp|
+        client.admin_add_user_to_group({
+          user_pool_id: pool_id,
+          username: options[:username],
+          group_name: grp.group_name
+        })
+      end
+      return old_user.username
+    end
+
     def mfa_challenge(options={})
 
       res = client.initiate_auth({
@@ -280,6 +331,13 @@ module CognitoAuth
         "USERNAME" => options[:username],
         "PASSWORD" => options[:password]
       }
+    end
+
+    def mhmac(username, client_id, client_secret)
+      data = "#{username}#{client_id}"
+      digest = OpenSSL::HMAC.digest('sha256', client_secret, data)
+      hmac = Base64.encode64(digest).strip()
+      hmac
     end
 
     def hmac(username)
