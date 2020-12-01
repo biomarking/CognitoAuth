@@ -12,14 +12,18 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
       # check old pool if exists
       unless auth_client.init.pool_id == "ap-southeast-1_RnNZ6nMsv"
         # authenticate to our old cognito pool
-        old_username = auth_client.init.migrate_pool({
-          client_id: ENV['OLD_POOL_CLIENT_ID'],
-          pool_id: ENV['OLD_COGNITO_POOL_ID'],
-          client_secret: ENV['OLD_COGNITO_SECRET'],
-          username: session_params[:username],
-          password: session_params[:password]
+        migrate_client = CognitoAuth::Migration.init(
+          ENV['OLD_AWS_ACCESS_KEY_ID'],
+          ENV['OLD_AWS_SECRET_ACCESS_KEY'],
+          ENV['OLD_POOL_CLIENT_ID'],
+          ENV['OLD_COGNITO_SECRET'],
+          ENV['OLD_COGNITO_POOL_ID']
+        )
+        old_username = migrate_client.migrate({
+            username: session_params[:username],
+            password: session_params[:password]
         })
-        
+
         res = auth_client.init.login(session_params)
       end
     end
