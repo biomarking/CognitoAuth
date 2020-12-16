@@ -125,6 +125,7 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
       _user.first_login       = true
       _user.user_type_id      = user_params[:group] == "patient" ? 1 : 2
       _user.qr_code           = res[:user_sub]
+      _user.infra_version     = 2 if auth_client.init.pool_id != "ap-southeast-1_RnNZ6nMsv"
       _user.verification_code = 4.times.map{ SecureRandom.random_number(9)}.join
       _user.marketing         = user_params[:marketing] if user_params[:marketing].present?
       _user.save
