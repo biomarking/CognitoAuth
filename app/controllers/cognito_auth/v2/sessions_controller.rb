@@ -73,7 +73,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
       elsif old_username.present?
         # update uuid then clear cache
         Rails.cache.delete("User/#{user_login.uuid}")
-        user_login.update(uuid: jwks[0]["username"])
+        user_login.update(uuid: jwks[0]["username"], infra_version: 2)
       end
 
       if user_login.qr_code.nil?
