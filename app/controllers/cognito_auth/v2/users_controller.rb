@@ -72,12 +72,71 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
   end
 
   def forgot
-    res = auth_client.init.client_forgotpassword_patient params[:username]
+    # res = auth_client.init.client_forgotpassword_patient params[:username]
 
-    p "===="
-    p res
-    p "----"
-    render json: res
+    # p "===="
+    # p res
+    # p "----"
+    # render json: res
+    begin
+      res = auth_client.init.client.forgot_password({
+          client_id: auth_client.init.client_id,
+          secret_hash: hmac( params[:username]),
+          username: params[:username]
+      })
+      puts "==== normal request"
+      render json: res.to_h
+    rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+      puts "==== forgot error"
+      # check old pool if exists
+      if auth_client.init.pool_id != "ap-southeast-1_RnNZ6nMsv"
+          # authenticate to our old cognito pool
+          migrate_client = CognitoAuth::Migration.init(
+              ENV['OLD_AWS_ACCESS_KEY_ID'],
+              ENV['OLD_AWS_SECRET_ACCESS_KEY'],
+              ENV['OLD_POOL_CLIENT_ID'],
+              ENV['OLD_COGNITO_SECRET'],
+              ENV['OLD_COGNITO_POOL_ID']
+          )
+          res_user = migrate_client.forgot_migrate({
+              username: params[:username]})
+
+          if res_user.present?
+              res = auth_client.init.client.forgot_password({
+                  client_id: auth_client.init.client_id,
+                  secret_hash: hmac( params[:username]),
+                  username: params[:username]
+              })
+
+              user_login = User.find_by_uuid res_user[:old_user]
+              # create new user
+              if !user_login.present?
+                  user_login = add_record res_user[:active_user][:user][:username], "patient"
+              elsif res_user.present?
+                  # update uuid then clear cache
+                  Rails.cache.delete("User/#{user_login.uuid}")
+                  user_login.update(uuid: res_user[:active_user][:user][:username], infra_version: 2)
+              end
+
+              if user_login.qr_code.nil?
+                  uid = user_login.id.to_s.rjust(5, '0')
+                  random = ('0'..'z').to_a.shuffle.first(4).join.upcase
+                  user_login.qr_code = "MD-#{random}#{uid}"
+                  user_login.save
+              end
+
+              if user_login.app_version == 1
+                  user_login.app_version = 2
+                  user_login.app_migrated_at = Time.zone.now
+                  user_login.save
+                  AppMigrationWorker.perform_async("medication",user_login.id)
+              end
+              render json: res.to_h
+          end
+      else
+          raise e
+      end
+    end
   end
 
   def forgot_doctor
@@ -175,6 +234,13 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
 
 
   private
+
+  def hmac(username)
+    data = "#{username}#{auth_client.init.client_id}"
+    digest = OpenSSL::HMAC.digest('sha256', auth_client.init.client_secret, data)
+    hmac = Base64.encode64(digest).strip()
+    hmac
+  end
 
   def reset_password_params
     params.require(:user).permit(:username, :password, :code)
