@@ -8,7 +8,7 @@ class CognitoAuth::V2::SessionsController < CognitoAuth::ApplicationController
     # authenticate user
     begin
       res = auth_client.init.login(session_params)
-    rescue => e
+    rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException => e
       # check old pool if exists
       if auth_client.init.pool_id != "ap-southeast-1_RnNZ6nMsv"
         # authenticate to our old cognito pool

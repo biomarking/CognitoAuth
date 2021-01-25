@@ -134,8 +134,10 @@ class CognitoAuth::V2::UsersController < CognitoAuth::ApplicationController
               render json: res.to_h
           end
       else
-          raise e
+        raise e
       end
+    rescue => e
+      raise e
     end
   end
 
