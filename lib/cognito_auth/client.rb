@@ -283,13 +283,33 @@ module CognitoAuth
 
     def client_forgotpassword_doctor( username )
       begin
+        if username.include? "@"
+          list = client.list_users({
+            user_pool_id: ENV["AWS_COGNITO_POOL_ID"], # required
+            attributes_to_get: [],
+            filter: "email=\"#{username}\"",
+          })
+    
+          userid = list.users[0].username
+
+          res = client.admin_update_user_attributes({
+          user_attributes: [ # required
+            {
+              name: "email_verified", # required
+              value: "true",
+            }
+          ],
+          
+            user_pool_id: ENV["AWS_COGNITO_POOL_ID"],
+            username: userid})
+        end
         res = client.forgot_password({
           client_id: client_id, # required
           secret_hash: hmac( username ),
           username: username, # required
         })
         res.to_h
-      rescue
+      rescue Exception => e
         raise ExceptionHandler::DoctorForgotError
       end
     end
